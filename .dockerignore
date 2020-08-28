@@ -1,0 +1,15 @@
+.idea
+.DS_Store
+.pytest_cache
+.dockerignore
+.git
+.gitignore
+__pycache__
+*.pyc
+**/migrations/*
+*.sqlite3
+.coverage
+htmlcov
+
+# Whitelist
+!sample_db.sqlite3
