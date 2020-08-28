@@ -66,12 +66,14 @@ We can also mount some directory to the docker container to preserve the databas
 
 #### Accessing API server
 In the browser, go to: `http://127.0.0.1:8000`.
-All available endpoints will be shown. You can click the hyperlink for a given endpoint to get redirected to it.
+All available endpoints will be shown. You can click the hyperlink for a given endpoint to get redirected to it:
 ![Screenshot](images/api_root.png)
 
-Order List also contains hyperlinks that allows you to move to the detail view of a given order.
+Order List also contains hyperlinks that allows you to move to the detail view of a given order:
 ![Screenshot](images/order_list.png)
 
+A specific order can be retrieved, deleted, updated, patched. It also contains more information about products: 
+![Screenshot](images/order_details.png)
 
 #### Run tests
 `docker container run --rm retailer:1.0 pytest -v -l tests/`
