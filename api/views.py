@@ -1,8 +1,8 @@
 from rest_framework.mixins import ListModelMixin
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 
-from api.models import Product, Order
-from api.serializers import ProductSerializer, OrderSerializer, OrderDetailsSerializer, OrderHyperlinkSerializer
+from api.models import Product, Order, ProductFeature
+from api.serializers import ProductSerializer, OrderSerializer, OrderDetailsSerializer, OrderHyperlinkSerializer, OrderCreateSerializer, OS
 
 # Create your views here.
 
@@ -16,7 +16,8 @@ class OrderViewSet(ModelViewSet):
     queryset = Order.objects.all()
     serializer_by_action = {
         "retrieve": OrderDetailsSerializer,
-        "list": OrderHyperlinkSerializer,
+        "list": OS,
+        "create": OrderCreateSerializer,
     }
 
     def get_serializer_class(self):

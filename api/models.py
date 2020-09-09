@@ -16,6 +16,13 @@ class Product(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 
+class ProductFeature(models.Model):
+    order = models.ForeignKey('Order', on_delete=models.CASCADE)
+    product = models.ForeignKey('Product', on_delete=models.CASCADE)
+    size = models.CharField(max_length=1, default='M')
+
+
 class Order(models.Model):
-    products = models.ManyToManyField('Product', related_name='products')
+    # products = models.ManyToManyField('Product', related_name='orders')
+    products = models.ManyToManyField('Product', related_name='orders', through='ProductFeature')
     created_at = models.DateTimeField(auto_now_add=True)
