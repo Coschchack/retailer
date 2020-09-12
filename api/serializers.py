@@ -23,8 +23,6 @@ class OrderListSerializer(HyperlinkedModelSerializer):
         fields = ('id', 'url', 'detailed_products', 'created_at')
 
     def create(self, validated_data):
-        # if there is no product -> model.DoesNotExist is raised
-
         new_order = Order.objects.create()
         product_details = validated_data.get('detailed_products')
         for details in product_details:
