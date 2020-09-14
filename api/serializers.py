@@ -1,6 +1,7 @@
 from rest_framework.serializers import ModelSerializer, HyperlinkedModelSerializer
 
 from api.models import Product, Order, DetailedProduct
+from api.exceptions import EmptyProducts
 
 
 class ProductSerializer(ModelSerializer):
@@ -24,8 +25,22 @@ class OrderListSerializer(HyperlinkedModelSerializer):
 
     def create(self, validated_data):
         new_order = Order.objects.create()
-        product_details = validated_data.get('detailed_products')
-        for details in product_details:
+        passed_detailed_products = validated_data.get('detailed_products')
+        if not passed_detailed_products:
+            raise EmptyProducts
+        for details in passed_detailed_products:
             DetailedProduct.objects.create(
                 order=new_order, product=details["product"], size=details["size"])
         return new_order
+
+    def update(self, instance, validated_data):
+        passed_detailed_products = validated_data.get('detailed_products')
+        if not passed_detailed_products:
+            raise EmptyProducts
+        for existing_product_details in instance.detailed_products.all():
+            existing_product_details.delete()
+        for product_details in passed_detailed_products:
+            DetailedProduct.objects.create(
+                order=instance, product=product_details["product"], size=product_details["size"])
+        instance.save()
+        return instance
