@@ -24,24 +24,28 @@ class OrderListSerializer(HyperlinkedModelSerializer):
         fields = ('id', 'url', 'detailed_products', 'created_at')
 
     def create(self, validated_data):
-        new_order = Order.objects.create()
         passed_detailed_products = validated_data.get('detailed_products')
-        if not passed_detailed_products:
-            raise EmptyProducts
+        self._exception_on_empty_products(passed_detailed_products)
+        new_order = Order.objects.create()
         for details in passed_detailed_products:
-            DetailedProduct.objects.create(
-                order=new_order, product=details["product"], size=details["size"], quantity=details["quantity"])
+            self._create_detailed_product(new_order, details)
         return new_order
 
     def update(self, instance, validated_data):
         passed_detailed_products = validated_data.get('detailed_products')
-        if not passed_detailed_products:
-            raise EmptyProducts
+        self._exception_on_empty_products(passed_detailed_products)
         for existing_product_details in instance.detailed_products.all():
             existing_product_details.delete()
         for product_details in passed_detailed_products:
-            DetailedProduct.objects.create(
-                order=instance, product=product_details["product"], size=product_details["size"],
-                quantity=product_details["quantity"])
+            self._create_detailed_product(instance, product_details)
         instance.save()
         return instance
+
+    def _create_detailed_product(self, target_order, product_details):
+        DetailedProduct.objects.create(
+            order=target_order, product=product_details["product"], size=product_details["size"],
+            quantity=product_details["quantity"])
+
+    def _exception_on_empty_products(self, products):
+        if not products:
+            raise EmptyProducts
