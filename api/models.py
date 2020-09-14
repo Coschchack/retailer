@@ -20,6 +20,7 @@ class DetailedProduct(models.Model):
     order = models.ForeignKey('Order', related_name="detailed_products", on_delete=models.CASCADE)
     product = models.ForeignKey('Product', related_name="detailed_products", on_delete=models.CASCADE)
     size = models.CharField(max_length=1, default='M')
+    quantity = models.IntegerField(validators=[MinValueValidator(1)])
 
 
 class Order(models.Model):

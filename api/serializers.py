@@ -13,7 +13,7 @@ class ProductSerializer(ModelSerializer):
 class DetailedProductSerializer(ModelSerializer):
     class Meta:
         model = DetailedProduct
-        fields = ("product", "size")
+        fields = ("product", "size", "quantity")
 
 
 class OrderListSerializer(HyperlinkedModelSerializer):
@@ -30,7 +30,7 @@ class OrderListSerializer(HyperlinkedModelSerializer):
             raise EmptyProducts
         for details in passed_detailed_products:
             DetailedProduct.objects.create(
-                order=new_order, product=details["product"], size=details["size"])
+                order=new_order, product=details["product"], size=details["size"], quantity=details["quantity"])
         return new_order
 
     def update(self, instance, validated_data):
@@ -41,6 +41,7 @@ class OrderListSerializer(HyperlinkedModelSerializer):
             existing_product_details.delete()
         for product_details in passed_detailed_products:
             DetailedProduct.objects.create(
-                order=instance, product=product_details["product"], size=product_details["size"])
+                order=instance, product=product_details["product"], size=product_details["size"],
+                quantity=product_details["quantity"])
         instance.save()
         return instance
