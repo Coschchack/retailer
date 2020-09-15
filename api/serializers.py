@@ -1,6 +1,7 @@
-from rest_framework.serializers import ModelSerializer, HyperlinkedModelSerializer, PrimaryKeyRelatedField
+from rest_framework.serializers import ModelSerializer, HyperlinkedModelSerializer
 
-from api.models import Product, Order
+from api.models import Product, Order, DetailedProduct
+from api.exceptions import EmptyProducts
 
 
 class ProductSerializer(ModelSerializer):
@@ -9,32 +10,42 @@ class ProductSerializer(ModelSerializer):
         fields = ('id', 'name', 'price', 'description', 'created_at')
 
 
-class OrderSerializer(ModelSerializer):
-    """
-    General serializer for Orders. 'products' contains only product primary keys, to limit the size of the response.
-    """
+class DetailedProductSerializer(ModelSerializer):
     class Meta:
-        model = Order
-        fields = ('id', 'products', 'created_at')
+        model = DetailedProduct
+        fields = ("product", "size", "quantity")
 
 
-class OrderDetailsSerializer(ModelSerializer):
-    """
-    Serializer for Order details. 'products' contains full information about each of the product like name or id.
-    """
-    products = ProductSerializer(many=True)
+class OrderSerializer(HyperlinkedModelSerializer):
+    detailed_products = DetailedProductSerializer(many=True)
 
     class Meta:
         model = Order
-        fields = ('id', 'products', 'created_at')
+        fields = ('id', 'url', 'detailed_products', 'created_at')
 
+    def create(self, validated_data):
+        passed_detailed_products = validated_data.get('detailed_products')
+        self._raise_exception_on_empty_products(passed_detailed_products)
+        new_order = Order.objects.create()
+        for details in passed_detailed_products:
+            self._create_detailed_product(new_order, details)
+        return new_order
 
-class OrderHyperlinkSerializer(HyperlinkedModelSerializer):
-    """
-    Serializer that includes hyperlinks to Order details.
-    """
-    products = PrimaryKeyRelatedField(many=True, read_only=True)
+    def update(self, instance, validated_data):
+        passed_detailed_products = validated_data.get('detailed_products')
+        self._raise_exception_on_empty_products(passed_detailed_products)
+        for existing_product_details in instance.detailed_products.all():
+            existing_product_details.delete()
+        for product_details in passed_detailed_products:
+            self._create_detailed_product(instance, product_details)
+        instance.save()
+        return instance
 
-    class Meta:
-        model = Order
-        fields = ('id', 'products', 'created_at', 'url')
+    def _create_detailed_product(self, target_order, product_details):
+        DetailedProduct.objects.create(
+            order=target_order, product=product_details["product"], size=product_details["size"],
+            quantity=product_details["quantity"])
+
+    def _raise_exception_on_empty_products(self, products):
+        if not products:
+            raise EmptyProducts
