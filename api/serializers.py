@@ -16,7 +16,7 @@ class DetailedProductSerializer(ModelSerializer):
         fields = ("product", "size", "quantity")
 
 
-class OrderListSerializer(HyperlinkedModelSerializer):
+class OrderSerializer(HyperlinkedModelSerializer):
     detailed_products = DetailedProductSerializer(many=True)
 
     class Meta:
