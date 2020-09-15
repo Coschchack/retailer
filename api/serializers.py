@@ -25,7 +25,7 @@ class OrderSerializer(HyperlinkedModelSerializer):
 
     def create(self, validated_data):
         passed_detailed_products = validated_data.get('detailed_products')
-        self._exception_on_empty_products(passed_detailed_products)
+        self._raise_exception_on_empty_products(passed_detailed_products)
         new_order = Order.objects.create()
         for details in passed_detailed_products:
             self._create_detailed_product(new_order, details)
@@ -33,7 +33,7 @@ class OrderSerializer(HyperlinkedModelSerializer):
 
     def update(self, instance, validated_data):
         passed_detailed_products = validated_data.get('detailed_products')
-        self._exception_on_empty_products(passed_detailed_products)
+        self._raise_exception_on_empty_products(passed_detailed_products)
         for existing_product_details in instance.detailed_products.all():
             existing_product_details.delete()
         for product_details in passed_detailed_products:
@@ -46,6 +46,6 @@ class OrderSerializer(HyperlinkedModelSerializer):
             order=target_order, product=product_details["product"], size=product_details["size"],
             quantity=product_details["quantity"])
 
-    def _exception_on_empty_products(self, products):
+    def _raise_exception_on_empty_products(self, products):
         if not products:
             raise EmptyProducts
